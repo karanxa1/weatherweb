@@ -184,8 +184,8 @@
                 document.getElementById('weatherInfo').innerHTML = '<p>Please enter a city name.</p>';
                 return;
             }
-            const apiKey = '2b9c87c0384785ed1b2a94235b5a4644';
-            const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+          const apiKey = '2b9c87c0384785ed1b2a94235b5a4644';  // Replace with your actual API key
+const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
 
             try {
                 const response = await fetch(url);
