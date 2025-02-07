@@ -26,6 +26,7 @@
             height: 100%;
             background: url('http://demos.creative-tim.com/paper-kit-2/assets/img/clouds.png') repeat-x;
             opacity: 0.7;
+            display: none;
         }
 
         .moving-clouds {
@@ -46,6 +47,31 @@
         @keyframes moveClouds2 {
             from { transform: translateX(0); }
             to { transform: translateX(-100%); }
+        }
+
+        /* Rain Effect */
+        .rain-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            display: none;
+        }
+
+        .raindrop {
+            position: absolute;
+            width: 2px;
+            height: 15px;
+            background: rgba(173, 216, 230, 0.7);
+            animation: rain-fall linear infinite;
+        }
+
+        @keyframes rain-fall {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(100vh); }
         }
 
         .container {
@@ -87,18 +113,71 @@
             margin-top: 20px;
             font-size: 1.2rem;
         }
+
+        /* Weather Buttons Positioned at Bottom */
+        .weather-buttons {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .weather-buttons button {
+            padding: 7px 12px; /* 30% smaller */
+            font-size: 0.8rem;
+            background-color: #ff9800;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .weather-buttons button:hover {
+            background-color: #e68900;
+        }
+
+        /* Footer */
+        footer {
+    position: absolute;
+    bottom: 10px;
+    left: 20px;  /* Moved to the left */
+    font-size: 0.8rem;
+    color: white;
+}
+
+        
     </style>
 </head>
 <body>
-    <div class="moving-clouds"></div>
-    <div class="moving-clouds2"></div>
+    <div class="moving-clouds" id="clouds1"></div>
+    <div class="moving-clouds2" id="clouds2"></div>
+    <div class="rain-container" id="rainEffect"></div>
+
     <div class="container">
         <h1>Weather App</h1>
         <input type="text" id="city" placeholder="Enter city name">
         <button onclick="getWeather()">Get Weather</button>
         <div class="weather-info" id="weatherInfo"></div>
     </div>
+
+    <div class="weather-buttons">
+        <button onclick="changeWeather('Clear')">Clear</button>
+        <button onclick="changeWeather('Cloudy')">Cloudy</button>
+        <button onclick="changeWeather('Rainy')">Rainy</button>
+    </div>
+
+    <footer>
+        © Copyright by Karan Rajput | Email: karanravirajput@gmail.com
+    </footer>
+
     <script>
+        document.getElementById('city').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                getWeather();
+            }
+        });
+
         async function getWeather() {
             const city = document.getElementById('city').value.trim();
             if (!city) {
@@ -107,12 +186,12 @@
             }
             const apiKey = '2b9c87c0384785ed1b2a94235b5a4644';
             const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
-            
+
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                console.log(data); // Log the full response to check errors
-                
+                console.log(data);
+
                 if (data.cod === 200) {
                     document.getElementById('weatherInfo').innerHTML = 
                         `<p><strong>City:</strong> ${data.name}, ${data.sys.country}</p>
@@ -126,6 +205,37 @@
             } catch (error) {
                 console.error('Error fetching data:', error);
                 document.getElementById('weatherInfo').innerHTML = `<p>Error fetching weather data. Please try again later.</p>`;
+            }
+        }
+
+        function changeWeather(condition) {
+            const clouds1 = document.getElementById('clouds1');
+            const clouds2 = document.getElementById('clouds2');
+            const rainEffect = document.getElementById('rainEffect');
+
+            clouds1.style.display = 'none';
+            clouds2.style.display = 'none';
+            rainEffect.style.display = 'none';
+
+            if (condition === 'Cloudy') {
+                clouds1.style.display = 'block';
+                clouds2.style.display = 'block';
+            } 
+            else if (condition === 'Rainy') {
+                rainEffect.style.display = 'block';
+                createRain();
+            }
+        }
+
+        function createRain() {
+            const rainContainer = document.getElementById('rainEffect');
+            rainContainer.innerHTML = '';  // Clear existing raindrops
+            for (let i = 0; i < 100; i++) {
+                let drop = document.createElement('div');
+                drop.classList.add('raindrop');
+                drop.style.left = Math.random() * 100 + 'vw';
+                drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
+                rainContainer.appendChild(drop);
             }
         }
     </script>
