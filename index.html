@@ -17,7 +17,6 @@
             overflow: hidden;
         }
 
-        /* Cloud Effect */
         .moving-clouds, .moving-clouds2 {
             position: absolute;
             top: 0;
@@ -27,12 +26,10 @@
             background: url('http://demos.creative-tim.com/paper-kit-2/assets/img/clouds.png') repeat-x;
             opacity: 0.7;
             display: none;
+            z-index: 1;
         }
 
-        .moving-clouds {
-            animation: moveClouds 60s linear infinite;
-        }
-
+        .moving-clouds { animation: moveClouds 60s linear infinite; }
         .moving-clouds2 {
             top: 20%;
             opacity: 0.5;
@@ -49,29 +46,41 @@
             to { transform: translateX(-100%); }
         }
 
-        /* Rain Effect */
-        .rain-container {
+        .raindrop, .snowflake {
+            position: absolute;
+            background: #fff;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .raindrop {
+            width: 2px;
+            height: 15px;
+            top: -15px;
+            animation: fall linear infinite;
+        }
+
+        .snowflake {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            top: -8px;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        .rain-container, .snow-container {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
             overflow: hidden;
+            z-index: 1;
             display: none;
-        }
-
-        .raindrop {
-            position: absolute;
-            width: 2px;
-            height: 15px;
-            background: rgba(173, 216, 230, 0.7);
-            animation: rain-fall linear infinite;
-        }
-
-        @keyframes rain-fall {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(100vh); }
         }
 
         .container {
@@ -87,72 +96,67 @@
         h1 {
             font-size: 2.5rem;
             margin-bottom: 20px;
-            color: rgb(242, 79, 3);
+            color: rgb(156, 230, 59);
             font-family: cursive;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         input, button {
-            padding: 10px;
+            padding: 12px 20px;
             font-size: 1rem;
             border-radius: 8px;
             border: none;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            margin: 10px;
+        }
+
+        input {
+            width: 80%;
+            max-width: 300px;
+            background: rgba(255, 255, 255, 0.9);
         }
 
         button {
             background-color: #6c63ff;
             color: white;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
-        button:hover {
-            background-color: #5a54e8;
-        }
+        button:hover { background-color: #5a54e8; }
 
         .weather-info {
-            margin-top: 20px;
+            margin: 20px auto;
             font-size: 1.2rem;
+            padding: 20px;
+            max-width: 80%;
+            backdrop-filter: blur(3px);
+            border-radius: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
-        /* Weather Buttons Positioned at Bottom */
-        .weather-buttons {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .weather-buttons button {
-            padding: 7px 12px; /* 30% smaller */
-            font-size: 0.8rem;
-            background-color: #ff9800;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            border: none;
-        }
-
-        .weather-buttons button:hover {
-            background-color: #e68900;
-        }
-
-        /* Footer */
         footer {
-    position: absolute;
-    bottom: 10px;
-    left: 20px;  /* Moved to the left */
-    font-size: 0.8rem;
-    color: white;
-}
+            position: absolute;
+            bottom: 10px;
+            left: 20px;
+            font-size: 0.8rem;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
 
-        
+        @media (max-width: 600px) {
+            .container { margin: 10px; min-height: 85vh; }
+            h1 { font-size: 2rem; }
+            input, button { width: 90%; margin: 5px auto; }
+            .weather-info { max-width: 90%; margin: 15px auto; padding: 15px; }
+        }
     </style>
 </head>
 <body>
     <div class="moving-clouds" id="clouds1"></div>
     <div class="moving-clouds2" id="clouds2"></div>
     <div class="rain-container" id="rainEffect"></div>
+    <div class="snow-container" id="snowEffect"></div>
 
     <div class="container">
         <h1>Weather App</h1>
@@ -161,21 +165,11 @@
         <div class="weather-info" id="weatherInfo"></div>
     </div>
 
-    <div class="weather-buttons">
-        <button onclick="changeWeather('Clear')">Clear</button>
-        <button onclick="changeWeather('Cloudy')">Cloudy</button>
-        <button onclick="changeWeather('Rainy')">Rainy</button>
-    </div>
-
-    <footer>
-        © Copyright by Karan Rajput | Email: karanravirajput@gmail.com
-    </footer>
+    <footer>© Copyright by Karan Rajput | Email: karanravirajput@gmail.com</footer>
 
     <script>
         document.getElementById('city').addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                getWeather();
-            }
+            if (event.key === 'Enter') getWeather();
         });
 
         async function getWeather() {
@@ -184,58 +178,79 @@
                 document.getElementById('weatherInfo').innerHTML = '<p>Please enter a city name.</p>';
                 return;
             }
-          const apiKey = '2b9c87c0384785ed1b2a94235b5a4644';  // Replace with your actual API key
-const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+            const apiKey = '2b9c87c0384785ed1b2a94235b5a4644';
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
 
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                console.log(data);
-
                 if (data.cod === 200) {
                     document.getElementById('weatherInfo').innerHTML = 
                         `<p><strong>City:</strong> ${data.name}, ${data.sys.country}</p>
-                        <p><strong>Temperature:</strong> ${data.main.temp}°C</p>
-                        <p><strong>Weather:</strong> ${data.weather[0].description}</p>
-                        <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
-                        <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>`;
+                         <p><strong>Temperature:</strong> ${data.main.temp}°C</p>
+                         <p><strong>Weather:</strong> ${data.weather[0].description}</p>
+                         <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
+                         <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>`;
+                    updateWeatherEffects(data.weather[0].main);
                 } else {
                     document.getElementById('weatherInfo').innerHTML = `<p>${data.message}</p>`;
                 }
             } catch (error) {
-                console.error('Error fetching data:', error);
                 document.getElementById('weatherInfo').innerHTML = `<p>Error fetching weather data. Please try again later.</p>`;
             }
         }
 
-        function changeWeather(condition) {
+        function updateWeatherEffects(weatherCondition) {
             const clouds1 = document.getElementById('clouds1');
             const clouds2 = document.getElementById('clouds2');
             const rainEffect = document.getElementById('rainEffect');
-
+            const snowEffect = document.getElementById('snowEffect');
             clouds1.style.display = 'none';
             clouds2.style.display = 'none';
             rainEffect.style.display = 'none';
+            snowEffect.style.display = 'none';
 
-            if (condition === 'Cloudy') {
-                clouds1.style.display = 'block';
-                clouds2.style.display = 'block';
-            } 
-            else if (condition === 'Rainy') {
-                rainEffect.style.display = 'block';
-                createRain();
+            switch(weatherCondition.toLowerCase()) {
+                case 'clear': break;
+                case 'clouds':
+                case 'mist':
+                    clouds1.style.display = 'block';
+                    clouds2.style.display = 'block';
+                    break;
+                case 'rain':
+                case 'drizzle':
+                case 'thunderstorm':
+                    rainEffect.style.display = 'block';
+                    createRain();
+                    break;
+                case 'snow':
+                    snowEffect.style.display = 'block';
+                    createSnow();
+                    break;
             }
         }
 
         function createRain() {
             const rainContainer = document.getElementById('rainEffect');
-            rainContainer.innerHTML = '';  // Clear existing raindrops
+            rainContainer.innerHTML = '';
             for (let i = 0; i < 100; i++) {
                 let drop = document.createElement('div');
                 drop.classList.add('raindrop');
                 drop.style.left = Math.random() * 100 + 'vw';
                 drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
                 rainContainer.appendChild(drop);
+            }
+        }
+
+        function createSnow() {
+            const snowContainer = document.getElementById('snowEffect');
+            snowContainer.innerHTML = '';
+            for (let i = 0; i < 50; i++) {
+                let snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+                snowflake.style.left = Math.random() * 100 + 'vw';
+                snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                snowContainer.appendChild(snowflake);
             }
         }
     </script>
